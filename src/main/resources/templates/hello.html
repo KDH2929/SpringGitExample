@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thymeleaf Test</title>
+</head>
+<body>
+    <h1>타임리프 연결 성공!</h1>
+    
+    <p>반갑습니다, <span th:text="${userName}">사용자</span>님!</p>
+    
+    <p>현재 서버 시간: <span th:text="${serverTime}">시간 정보</span></p>
+
+    <hr>
+    <a href="/">홈으로 가기</a>
+</body>
+</html>
