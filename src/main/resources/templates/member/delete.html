@@ -1,40 +1,37 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{/include/header :: header}">
-  <title>delete</title>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head th:replace="~{include/header :: header}">
+    <title>게시글 삭제</title>
 </head>
 <body>
-<div th:replace="~{/include/body-header :: bodyHeader}"></div>
+<div th:replace="~{include/body-header :: bodyHeader}"></div>
+
 <div class="container">
-  <div class="pg-opt">
-    <div class="row">
-      <div class="col-md-6 pc">
-        <h2>[[#{EXIT_MEMBER}]]</h2>
-      </div>
-      <div class="col-md-6">
-        <ol class="breadcrumb">
-          <li>[[#{MEMBER}]]</li>
-          <li class="active">[[#{EXIT_MEMBER}]]</li>
-        </ol>
-      </div>
+    <div class="pg-opt">
+        <h2>게시글 삭제 확인</h2>
     </div>
-  </div>
-  <div class="content">
-    <form th:action="@{/member/delete}" method="post" class="form-horizontal">
-      <div class="form-group">
-        <label class="control-label col-sm-2" for="password">[[#{MEMBER_PW}]]</label>
-        <div class="col-sm-4">
-          <input type="password" name="password" id="password" class="form-control"><h4 style="color:red" th:if="${message!=null}">[[#{${message}}]]</h4>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-8">
-          <input type="submit" class="btn btn-info" th:value="#{DELETE_USER_INFO}">
-        </div>
-      </div>
-    </form>
-  </div>
+
+    <div class="content">
+        <form th:action="@{/board/delete}" method="post" class="form-horizontal">
+            
+            <input type="hidden" name="boardId" th:value="${boardId}">
+            <input type="hidden" name="categoryId" th:value="${categoryId}">
+            <input type="hidden" name="replyNumber" th:value="${replyNumber}">
+
+            <div class="form-group">
+                <label>비밀번호 입력</label>
+                <input type="password" name="password" class="form-control" required>
+                <p th:if="${message != null}" style="color:red;">[[#{${message}}]]</p>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger">삭제하기</button>
+                <a th:href="@{/board/cat/{catId}(catId=${categoryId})}" class="btn btn-default">취소</a>
+            </div>
+        </form>
+    </div>
 </div>
-<footer th:replace="~{/include/footer :: footer}"></footer>
+
+<footer th:replace="~{include/footer :: footer}"></footer>
 </body>
 </html>

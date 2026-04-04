@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ import com.example.demo.board.model.BoardUploadFile;
 import com.example.demo.board.service.IBoardCategoryService;
 import com.example.demo.board.service.IBoardService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -43,25 +45,33 @@ public class BoardController {
 	IBoardCategoryService categoryService;
 
 	@GetMapping("/board/cat/{categoryId}/{page}")
-	public String getListByCategory(@PathVariable("categoryId") int categoryId, @PathVariable("page") int page,
-			HttpSession session, Model model) {
-
+	public String getListByCategory(@PathVariable int categoryId, @PathVariable int page, HttpSession session,
+			Model model) {
 		session.setAttribute("page", page);
 		model.addAttribute("categoryId", categoryId);
 		List<Board> boardList = boardService.selectArticleListByCategory(categoryId, page);
 		model.addAttribute("boardList", boardList);
-
 		int bbsCount = boardService.selectTotalArticleCountByCategoryId(categoryId);
 		int totalPage = 0;
-
 		if (bbsCount > 0) {
 			totalPage = (int) Math.ceil(bbsCount / 10.0);
 		}
+		int totalPageBlock = (int) (Math.ceil(totalPage / 10.0));
+		int nowPageBlock = (int) Math.ceil(page / 10.0);
+		int startPage = (nowPageBlock - 1) * 10 + 1;
+		int endPage = 0;
+		if (totalPage > nowPageBlock * 10) {
+			endPage = nowPageBlock * 10;
+		} else {
+			endPage = totalPage;
+		}
 		model.addAttribute("totalPageCount", totalPage);
-		model.addAttribute("page", page);
-
+		model.addAttribute("nowPage", page);
+		model.addAttribute("totalPageBlock", totalPageBlock);
+		model.addAttribute("nowPageBlock", nowPageBlock);
+		model.addAttribute("startPage", startPage);
+		model.addAttribute("endPage", endPage);
 		return "board/list";
-
 	}
 
 	@GetMapping("/board/cat/{categoryId}")
@@ -70,8 +80,14 @@ public class BoardController {
 	}
 
 	@GetMapping("/board/{boardId}/{page}")
-	public String getBoardDetails(@PathVariable("boardId") int boardId, @PathVariable("page") int page, Model model) {
+	public String getBoardDetails(@PathVariable int boardId, @PathVariable int page, Model model) {
 		Board board = boardService.selectArticle(boardId);
+		String fileName = board.getFileName();
+		if (fileName != null) {
+			int fileLength = fileName.length();
+			String fileType = fileName.substring(fileLength - 4, fileLength).toUpperCase();
+			model.addAttribute("fileType", fileType);
+		}
 		model.addAttribute("board", board);
 		model.addAttribute("page", page);
 		model.addAttribute("categoryId", board.getCategoryId());
@@ -96,13 +112,8 @@ public class BoardController {
 	}
 
 	@PostMapping(value = "/board/write")
-	public String writeArticle(Board board, BindingResult results, @RequestParam("csrfToken") String csrfToken, HttpSession session,
-			RedirectAttributes redirectAttrs) {
-		logger.info("/board/write : " + board.toString() + csrfToken);
-		String sessionToken = (String) session.getAttribute("csrfToken");
-		if (csrfToken == null || !csrfToken.equals(sessionToken)) {
-			throw new RuntimeException("CSRF Token Error.");
-		}
+	public String writeArticle(Board board, BindingResult results, RedirectAttributes redirectAttrs) {
+		logger.info("/board/write : " + board.toString());
 		try {
 			board.setContent(board.getContent().replace("\r\n", "<br>"));
 			board.setTitle(Jsoup.clean(board.getTitle(), Safelist.basic()));
@@ -196,11 +207,10 @@ public class BoardController {
 
 	@PostMapping(value = "/board/update")
 	public String updateArticle(Board board, RedirectAttributes redirectAttrs) {
-
 		logger.info("/board/update " + board.toString());
 		String dbPassword = boardService.getPassword(board.getBoardId());
 		if (!board.getPassword().equals(dbPassword)) {
-			redirectAttrs.addFlashAttribute("passwordError", "게시글 비밀번호가 다릅니다");
+			redirectAttrs.addFlashAttribute("passwordError", "게시글 비밀번호가다릅니다");
 			return "redirect:/board/update/" + board.getBoardId();
 		}
 		try {
@@ -256,8 +266,8 @@ public class BoardController {
 	}
 
 	@GetMapping("/board/search/{page}")
-	public String search(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
-			@PathVariable("page") int page, HttpSession session, Model model) {
+	public String search(@RequestParam(required = false, defaultValue = "") String keyword, @PathVariable int page,
+			HttpSession session, Model model) {
 		try {
 			List<Board> boardList = boardService.searchListByContentKeyword(keyword, page);
 			model.addAttribute("boardList", boardList);
@@ -266,13 +276,33 @@ public class BoardController {
 			if (bbsCount > 0) {
 				totalPage = (int) Math.ceil(bbsCount / 10.0);
 			}
-			model.addAttribute("totalPageCount", totalPage);
-			model.addAttribute("page", page);
+			int totalPageBlock = (int) (Math.ceil(totalPage / 10.0));
+			int nowPageBlock = (int) Math.ceil(page / 10.0);
+			int startPage = (nowPageBlock - 1) * 10 + 1;
+			int endPage = 0;
+			if (totalPage > nowPageBlock * 10) {
+				endPage = nowPageBlock * 10;
+			} else {
+				endPage = totalPage;
+			}
 			model.addAttribute("keyword", keyword);
-			logger.info(totalPage + ":" + page + ":" + keyword);
+			model.addAttribute("totalPageCount", totalPage);
+			model.addAttribute("nowPage", page);
+			model.addAttribute("totalPageBlock", totalPageBlock);
+			model.addAttribute("nowPageBlock", nowPageBlock);
+			model.addAttribute("startPage", startPage);
+			model.addAttribute("endPage", endPage);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return "board/search";
+	}
+
+	@ExceptionHandler({ RuntimeException.class })
+	public String error(HttpServletRequest request, Exception ex, Model model) {
+		model.addAttribute("exception", ex);
+		model.addAttribute("stackTrace", ex.getStackTrace());
+		model.addAttribute("url", request.getRequestURI());
+		return "error/runtime";
 	}
 }
