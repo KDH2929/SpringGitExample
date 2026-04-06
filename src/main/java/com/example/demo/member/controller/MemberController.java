@@ -17,6 +17,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public class MemberController {
     }
 
     @PostMapping(value = "/member/insert")
-    public String memberInsert(@Validated Member member, BindingResult result, String csrfToken, HttpSession session, Model model) {
+    public String memberInsert(@Validated Member member, BindingResult result, @RequestParam("csrfToken") String csrfToken, HttpSession session, Model model) {
         if (csrfToken == null || "".equals(csrfToken)) {
             throw new RuntimeException("CSRF 토큰이 없습니다.");
         } else if (!csrfToken.equals(session.getAttribute("csrfToken"))) {
@@ -70,7 +71,7 @@ public class MemberController {
             return "member/form";
         }
         session.invalidate();
-        return "home";
+        return "redirect:/";
     }
 
     @GetMapping("/member/login")
@@ -79,7 +80,7 @@ public class MemberController {
     }
 
     @PostMapping("/member/login")
-    public String login(String userid, String password, HttpSession session, Model model) {
+    public String login(@RequestParam("userid") String userid, @RequestParam("password") String password, HttpSession session, Model model) {
         Member member = memberService.selectMember(userid);
         if (member != null) {
             logger.info(member.toString());
@@ -102,7 +103,7 @@ public class MemberController {
     @GetMapping("/member/logout")
     public String logout(HttpSession session, HttpServletRequest request) {
         session.invalidate();
-        return "home";
+        return "redirect:/";
     }
 
     @GetMapping("/member/update")
