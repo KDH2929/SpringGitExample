@@ -81,7 +81,7 @@
 	<insert id="insertArticle" parameterType="com.example.demo.board.model.Board">
 		<![CDATA[ 
 		
-				NSERT INTO board
+				INSERT INTO board
 				(board_id, category_id, writer, email, password, title, content,
 				write_date, master_id, reply_number, reply_step)
 				VALUES

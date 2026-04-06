@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{/include/header :: header}"></head>
 
@@ -39,16 +40,37 @@ categoryId}"></option>
 					<label for="writer" class="control-label col-sm-2" th:text="#{WRITER}">WRITER</label>
 
 					<div class="col-sm-2">
+						<!--
 						<input type="text" name="writer" id="writer" th:value="${session.name}"
 							th:readonly="${session.name!=null ? 'readonly': false}" class="form-control">
+							-->
+							
+						<!-- sec:authentication="name" -->
+						<input type="text" name="writer" id="writer"
+							th:value="${#authentication.name}"
+							readonly="readonly"
+							class="form-control">
+
+		
 					</div>
 				</div>
 				<div class="form-group">
 					<label for="email" class="control-label col-sm-2" th:text="#{EMAIL}">EMAIL</label>
 					<div class="col-sm-4">
+						<!--
 						<input type="text" name="email" id="email" th:value="${session.email}"
 							th:readonly="${session.email!=null ? 'readonly': false}" class="form-control"
 							autocomplete="off" required>
+						-->
+						
+						<!-- sec:authentication="principal.userEmail" -->
+						<input type="text" name="email" id="email"
+							th:value="${#authentication.principal.userEmail}"
+							readonly="readonly"
+							class="form-control"
+							autocomplete="off" required>
+			
+	
 					</div>
 				</div>
 				<div class="form-group">

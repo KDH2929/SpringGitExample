@@ -1,0 +1,32 @@
+package com.example.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf((csrfConfig) -> csrfConfig.disable());
+		http.formLogin(login -> login.loginPage("/member/login").usernameParameter("userid").defaultSuccessUrl("/"));
+		http.logout(logout -> logout.logoutUrl("/member/logout").logoutSuccessUrl("/member/login")
+				.invalidateHttpSession(true));
+		http.authorizeHttpRequests(authRequest -> authRequest.requestMatchers("/file/**").hasRole("ADMIN")
+				.requestMatchers("/board/**").hasAnyRole("USER", "ADMIN")
+				.requestMatchers("/css/**", "/js/**", "/images/**").permitAll().requestMatchers("/member/insert")
+				.permitAll().requestMatchers("/member/login").permitAll().requestMatchers("/**").permitAll());
+		return http.build();
+	}
+
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+
+}

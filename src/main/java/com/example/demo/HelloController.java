@@ -8,14 +8,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class HelloController {
-	@GetMapping("/")
-	public String home(@RequestParam(name = "lang", required = false) String lang, Model model) {
-	    
-	    model.addAttribute("message", "Welcome to our Service!");
-
-	    // 언어 처리는 WebMvcConfig에 등록된 Interceptor가 자동으로 해준다
-	    return "hello";
-	}
 	
 	@GetMapping("/hello-test")
 	@ResponseBody // 임시로 붙여서 테스트

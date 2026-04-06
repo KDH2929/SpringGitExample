@@ -9,71 +9,57 @@
 		<div class="pg-opt">
 			<div class="row">
 				<div class="col-md-6 pc">
-					<h2 th:text="#{REPLY_ARTICLE}">REPLY ARTICLE</h2>
+					<h2 th:text="#{home}">홈</h2>
 				</div>
 				<div class="col-md-6">
 					<ol class="breadcrumb">
-						<li th:text="#{BOARD}">BOARD</li>
-						<li class="active" th:text="#{REPLY_ARTICLE}">REPLY
-							ARTICLE</li>
+						<li th:text="#{home.dashboard}">대시보드</li>
+						<li th:text="#{home}" class="active">홈</li>
 					</ol>
+					<span th:text="#{lang.change}"></span>:
+					<select id="locales">
+						<option value="" th:text="#{lang.select}"></option>
+						<option value="en" th:text="#{lang.eng}"></option>
+						<option value="kr" th:text="#{lang.kor}"></option>
+					</select>
 				</div>
 			</div>
 		</div>
 		<div class="content">
-			<form th:action="@{/board/reply}" method="post" enctype="multipart/form-data" class="form-horizontal">
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="writer" th:text="#{WRITER}">WRITER</label>
-					<div class="col-sm-2">
-						<input type="text" name="writer" id="writer" th:value="${session.name}" th:readonly="${session.name!=null ? 'readonly':
-false}" class="form-control" autocomplete="off" required>
-					</div>
+			<div class="alert alert-warning page-header">
+				<h3 th:text="#{home.message}">Welcome</h3>
+				<h3>request 데이터 : <span th:text="#{message}"></span></h3>
+			</div>
+			<div class="row">
+				<div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+					<a th:href="@{/board/cat/1}">카테고리 1번 게시판</a><br>
+					<a th:href="@{/board/cat/2}">카테고리 2번 게시판</a><br>
+					<a th:href="@{/board/cat/3}">카테고리 3번 게시판</a><br>
 				</div>
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="email" th:text="#{EMAIL}">EMAIL</label>
-					<div class="col-sm-4">
-						<input type="text" name="email" id="email" th:value="${session.email}"
-							th:readonly="${session.email!=null ? 'readonly': false}" class="form-control" required>
-					</div>
+				<div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">여기에 아무거나 입력해 놓으세요,</div>
+				<div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">여기에 아무거나 입력해 놓으세요,</div>
+
+			</div>
+			<div class="progress">
+				<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="100" aria-valuemin="0"
+					aria-valuemax="100" style="width:
+100%;">
+					<span class="sr-only"></span>
 				</div>
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="password" th:text="#{PASSWORD}">PASSWORD</label>
-					<div class="col-sm-2">
-						<input type="password" name="password" id="password" class="form-control" required>
-					</div>
+			</div>
+			<div class="progress">
+				<div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0"
+					aria-valuemax="100" style="width:
+100%;">
+					<span class="sr-only"></span>
 				</div>
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="title" th:text="#{TITLE}">TITLE</label>
-					<div class="col-sm-8">
-						<input type="text" name="title" id="title" class="form-control" th:value="${board.title}"
-							required>
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="content" th:text="#{CONTENT}">CONTENT</label>
-					<div class="col-sm-8">
-						<textarea name="content" id="content" rows="10" cols="100" class="form-control"
-							th:text="${board.content}"></textarea>
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="control-label col-sm-2" for="file" th:text="#{FILE}">FILE</label>
-					<div class="col-sm-8">
-						<input type="file" id="file" name="file">
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="col-sm-offset-2 col-sm-8">
-						<input type="hidden" name="boardId" th:value="${board.boardId}">
-						<input type="hidden" name="categoryId" th:value="${board.categoryId}">
-						<input type="hidden" name="masterId" th:value="${board.masterId}">
-						<input type="hidden" name="replyNumber" th:value="${board.replyNumber}">
-						<input type="hidden" name="replyStep" th:value="${board.replyStep}">
-						<input type="submit" th:value="#{SAVE}" class="btn btn-info">
-						<input type="reset" th:value="#{CANCEL}" onclick="history.back()" class="btn btn-info">
-					</div>
-				</div>
-			</form>
+			</div>
+			<div class="alert alert-info">
+				<ol>
+					<li>여기에 아무거나 입력해 놓으세요,
+					<li><img th:src="@{/images/web.png}">
+				</ol>
+			</div>
 		</div>
 	</div>
 	<footer th:replace="~{/include/footer :: footer}"></footer>

@@ -1,14 +1,15 @@
 package com.example.demo.member.controller;
 
-import com.example.demo.member.MemberValidator;
-import com.example.demo.member.model.Member;
-import com.example.demo.member.service.IMemberService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import java.security.Principal;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,8 +19,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.UUID;
+import com.example.demo.member.MemberValidator;
+import com.example.demo.member.model.Member;
+import com.example.demo.member.service.IMemberService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class MemberController {
@@ -31,6 +38,9 @@ public class MemberController {
 
     @Autowired
     MemberValidator memberValidator;
+    
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @InitBinder
     private void initBinder(WebDataBinder binder) {
@@ -63,7 +73,15 @@ public class MemberController {
                 model.addAttribute("message", "MEMBER_PW_RE");
                 return "member/form";
             }
+            
+            // 해싱처리
+            
+            String encodedPassword = passwordEncoder.encode(member.getPassword());
+            member.setPassword(encodedPassword);
+            
             memberService.insertMember(member);
+            
+            
         } catch (DuplicateKeyException e) {
             member.setUserid(null);
             model.addAttribute("member", member);
@@ -108,15 +126,20 @@ public class MemberController {
 
     @GetMapping("/member/update")
     public String updateMember(@Validated Member member, BindingResult result, HttpSession session, Model model) {
-        if (result.hasErrors()) {
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	String userid = auth.getName();
+    	
+    	if (result.hasErrors()) {
             model.addAttribute("member", member);
             return "member/update";
         }
         try {
+        	String encodedPw = passwordEncoder.encode(member.getPassword());
+        	member.setPassword(encodedPw);
             memberService.updateMember(member);
             model.addAttribute("message", "UPDATED_MEMBER_INFO");
             model.addAttribute("member", member);
-            session.setAttribute("email", member.getEmail());
+            // session.setAttribute("email", member.getEmail());
             return "member/login";
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
@@ -126,8 +149,11 @@ public class MemberController {
     }
 
     @GetMapping("/member/delete")
-    public String deleteMember(HttpSession session, Model model) {
-        String userid = (String)session.getAttribute("userid");
+    public String deleteMember(Principal principal, HttpSession session, Model model) {
+        // String userid = (String)session.getAttribute("userid");
+    	
+    	String userid = principal.getName();
+    	
         if (userid != null && !userid.equals("")) {
             Member member = memberService.selectMember(userid);
             model.addAttribute("member", member);
@@ -140,16 +166,20 @@ public class MemberController {
     }
 
     @PostMapping("/member/delete")
-    public String deleteMember(String password, HttpSession session, Model model) {
+    public String deleteMember(String password, Principal principal, HttpSession session, RedirectAttributes model) {
         try {
             Member member = new Member();
-            member.setUserid((String)session.getAttribute("userid"));
+            
+            member.setUserid(principal.getName());
+            
+            //member.setUserid((String)session.getAttribute("userid"));
             String dbpw = memberService.getPassword(member.getUserid());
-            if (password != null && password.equals(dbpw)) {
+            if (password != null && passwordEncoder.matches(password, dbpw)) {
                 member.setPassword(password);
                 memberService.deleteMember(member);
-                session.invalidate();
-                return "member/login";
+                // session.invalidate();
+                model.addFlashAttribute("message", "DELETED_USER_INFO");
+                return "redirect:/member/logout";
             } else {
                 model.addAttribute("message", "WRONG_PASSWORD");
                 return "member/delete";

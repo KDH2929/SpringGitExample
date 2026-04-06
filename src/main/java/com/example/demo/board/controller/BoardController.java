@@ -43,9 +43,19 @@ public class BoardController {
 
 	@Autowired
 	IBoardCategoryService categoryService;
+	
+	@GetMapping("/")
+	public String ContextRoot() {
+		return "home";
+	}
+	
+	@GetMapping({"/board/cat", "/board/cat/"})
+	public String defaultCategory() {
+	    return "redirect:/board/cat/1"; 
+	}
 
 	@GetMapping("/board/cat/{categoryId}/{page}")
-	public String getListByCategory(@PathVariable int categoryId, @PathVariable int page, HttpSession session,
+	public String getListByCategory(@PathVariable("categoryId") int categoryId, @PathVariable("page") int page, HttpSession session,
 			Model model) {
 		session.setAttribute("page", page);
 		model.addAttribute("categoryId", categoryId);
@@ -80,7 +90,7 @@ public class BoardController {
 	}
 
 	@GetMapping("/board/{boardId}/{page}")
-	public String getBoardDetails(@PathVariable int boardId, @PathVariable int page, Model model) {
+	public String getBoardDetails(@PathVariable("boardId") int boardId, @PathVariable("page") int page, Model model) {
 		Board board = boardService.selectArticle(boardId);
 		String fileName = board.getFileName();
 		if (fileName != null) {
@@ -266,7 +276,7 @@ public class BoardController {
 	}
 
 	@GetMapping("/board/search/{page}")
-	public String search(@RequestParam(required = false, defaultValue = "") String keyword, @PathVariable int page,
+	public String search(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword, @PathVariable("page") int page,
 			HttpSession session, Model model) {
 		try {
 			List<Board> boardList = boardService.searchListByContentKeyword(keyword, page);
